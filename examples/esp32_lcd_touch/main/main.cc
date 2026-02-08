@@ -263,7 +263,8 @@ private:
         int idx = (int)(intptr_t)target->user_data;
         if (idx >= 0 && idx < kListCount) {
             s_selected = idx;
-            ui::UIManager::GetInstance().NavigateTo("detail", ui::Direction::Left);
+            /* SlideOver: detail slides over the list page */
+            ui::UIManager::GetInstance().NavigateTo("detail", ui::Direction::Left, ui::TransitionType::SlideOver);
         }
     }
     static void OnBack(lv_event_t *e) {
@@ -309,8 +310,10 @@ extern void app_main(void) {
         return;
     }
 
-    ui::UIManager::GetInstance().Initialize(screen, nullptr);
-    auto &reg = ui::UIManager::GetInstance().GetRegistry();
+    auto &mgr = ui::UIManager::GetInstance();
+    mgr.Initialize(screen, nullptr);
+
+    auto &reg = mgr.GetRegistry();
     reg.RegisterPage(new HomePage());
     reg.RegisterPage(new SettingsPage());
     reg.RegisterPage(new ListPage());
@@ -318,12 +321,16 @@ extern void app_main(void) {
 
     using Nav = ui::PageNavigation;
     using D = ui::Direction;
+    using T = ui::TransitionType;
     reg.SetNavigation("home",     Nav{ {"settings", D::Right}, {}, {}, {"list", D::Right} });
     reg.SetNavigation("settings", Nav{ {}, {"home", D::Left}, {}, {} });
-    reg.SetNavigation("list",     Nav{ {}, {"home", D::Left}, {}, {} });
+    reg.SetNavigation("list",     Nav{ {}, {"home", D::Left}, {}, {"detail", D::Right, T::SlideOver} });
     reg.SetNavigation("detail",   Nav{ {}, {"list", D::Left}, {}, {} });
 
-    ui::UIManager::GetInstance().SetTransitionDuration(280);
-    ui::UIManager::GetInstance().NavigateTo("home");
+    mgr.SetTransitionDuration(280);
+    /* Keep at most 3 inactive pages in memory; -1 = unlimited (default), 0 = destroy immediately */
+    mgr.SetMaxCachedPages(3);
+
+    mgr.NavigateTo("home");
     ESP_LOGI(TAG, "UI ready. Use touch or swipe.");
 }

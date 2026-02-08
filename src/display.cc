@@ -3,6 +3,8 @@
 
 #define TAG "Display"
 
+namespace ui {
+
 Display::Display() {}
 Display::~Display() {}
 
@@ -29,6 +31,8 @@ void Display::SetPowerSaveMode(bool on) {
     (void)on;
     ESP_LOGD(TAG, "SetPowerSaveMode: %d", on);
 }
+
+} // namespace ui
 
 lv_indev_t *lvgl_nav_kit_add_pointer_indev(lv_display_t *disp,
                                             lv_indev_read_cb_t read_cb,

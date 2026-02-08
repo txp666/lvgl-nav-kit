@@ -1,5 +1,4 @@
 #include "lvgl_nav_kit/page_registry.h"
-#include <algorithm>
 #include <esp_log.h>
 
 #define TAG "PageRegistry"
@@ -17,11 +16,8 @@ void PageRegistry::RegisterPage(PageBase *page) {
     auto it = id_map_.find(page->GetId());
     if (it != id_map_.end()) {
         ESP_LOGW(TAG, "Page ID '%s' already exists, replacing", page->GetId());
-        PageBase *old = it->second;
-        pages_.erase(std::find(pages_.begin(), pages_.end(), old));
-        delete old;
+        delete it->second;
     }
-    pages_.push_back(page);
     id_map_[page->GetId()] = page;
     ESP_LOGI(TAG, "Registered page '%s'", page->GetId());
 }
@@ -61,8 +57,7 @@ bool PageRegistry::GetNavigationTarget(const char *page_id, Direction gesture_di
 }
 
 void PageRegistry::Clear() {
-    for (auto *p : pages_) delete p;
-    pages_.clear();
+    for (auto &pair : id_map_) delete pair.second;
     id_map_.clear();
     navigation_map_.clear();
 }

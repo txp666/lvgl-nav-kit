@@ -17,7 +17,7 @@ PageBase::~PageBase() {
 
 void PageBase::DoCreate(lv_obj_t *parent, const ui_theme_t *theme) {
     if (state_ != PageState::Registered && state_ != PageState::Destroyed) {
-        ESP_LOGW(TAG, "Page %s already created, state=%d", id_, (int)state_);
+        ESP_LOGW(TAG, "Page %s already created, state=%d", id_.c_str(), (int)state_);
         return;
     }
     theme_ = theme ? theme : ui_theme_get_default();
@@ -35,7 +35,7 @@ void PageBase::DoCreate(lv_obj_t *parent, const ui_theme_t *theme) {
     OnCreate(container_);
 
     state_ = PageState::Created;
-    ESP_LOGI(TAG, "Page %s created", id_);
+    ESP_LOGI(TAG, "Page %s created", id_.c_str());
 }
 
 void PageBase::DoDestroy() {
@@ -49,7 +49,7 @@ void PageBase::DoDestroy() {
     event_bindings_.clear();
     theme_ = nullptr;
     state_ = PageState::Destroyed;
-    ESP_LOGI(TAG, "Page %s destroyed", id_);
+    ESP_LOGI(TAG, "Page %s destroyed", id_.c_str());
 }
 
 lv_timer_t *PageBase::CreateTimer(lv_timer_cb_t cb, uint32_t period, void *user_data) {
@@ -128,6 +128,9 @@ lv_obj_t *PageBase::CreateDropdown(lv_obj_t *parent, const char *options, lv_eve
     lv_obj_set_style_radius(dropdown, TC(T->input_radius), 0);
     lv_obj_set_style_border_color(dropdown, lv_color_hex(TC(T->color_border)), 0);
     lv_obj_set_style_pad_ver(dropdown, TC(T->input_pad_v), 0);
+    /* Open/close to access the list widget and apply font. This is the
+       standard LVGL workaround; no visual flash occurs because LVGL batches
+       rendering and the page container is hidden during creation. */
     lv_dropdown_open(dropdown);
     lv_obj_t *list = lv_dropdown_get_list(dropdown);
     if (list && T && T->font_normal) lv_obj_set_style_text_font(list, T->font_normal, 0);
@@ -195,9 +198,10 @@ lv_obj_t *PageBase::CreateKeyboard(lv_obj_t *parent, lv_keyboard_mode_t mode) {
     lv_obj_t *kb = lv_keyboard_create(parent);
     lv_keyboard_set_mode(kb, mode);
     lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
-    if (IsLargeScreen() && T && T->font_icon)
-        lv_obj_set_height(kb, ScreenHeight() * 40 / 100),
+    if (IsLargeScreen() && T && T->font_icon) {
+        lv_obj_set_height(kb, ScreenHeight() * 40 / 100);
         lv_obj_set_style_text_font(kb, T->font_icon, LV_PART_ITEMS);
+    }
     return kb;
 }
 

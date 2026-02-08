@@ -110,7 +110,8 @@ private:
         int idx = static_cast<int>(reinterpret_cast<intptr_t>(target->user_data));
         if (idx >= 0 && idx < kListCount) {
             s_selected_list_index = idx;
-            ui::UIManager::GetInstance().NavigateTo("detail", ui::Direction::Left);
+            /* SlideOver: detail slides over the list page */
+            ui::UIManager::GetInstance().NavigateTo("detail", ui::Direction::Left, ui::TransitionType::SlideOver);
         }
     }
     static void OnBackClicked(lv_event_t *e) {
@@ -168,9 +169,11 @@ extern void app_main(void) {
     // 1) Init UI and theme (nullptr = default)
     ui_theme_t custom_theme;
     init_custom_theme(&custom_theme);
-    ui::UIManager::GetInstance().Initialize(screen, &custom_theme);
+    auto &mgr = ui::UIManager::GetInstance();
+    mgr.Initialize(screen, &custom_theme);
+
     // 2) Register pages
-    auto &reg = ui::UIManager::GetInstance().GetRegistry();
+    auto &reg = mgr.GetRegistry();
     reg.RegisterPage(new HomePage());
     reg.RegisterPage(new SettingsPage());
     reg.RegisterPage(new ListPage());
@@ -179,12 +182,17 @@ extern void app_main(void) {
     // 3) Gesture targets (left/right/up/down)
     using Nav = ui::PageNavigation;
     using D = ui::Direction;
+    using T = ui::TransitionType;
     reg.SetNavigation("home",     Nav{ {"settings", D::Right}, {}, {}, {"list", D::Right} });
     reg.SetNavigation("settings", Nav{ {}, {"home", D::Left}, {}, {} });
-    reg.SetNavigation("list",    Nav{ {}, {"home", D::Left}, {}, {} });
-    reg.SetNavigation("detail",  Nav{ {}, {"list", D::Left}, {}, {} });
+    reg.SetNavigation("list",     Nav{ {}, {"home", D::Left}, {}, {"detail", D::Right, T::SlideOver} });
+    reg.SetNavigation("detail",   Nav{ {}, {"list", D::Left}, {}, {} });
 
-    ui::UIManager::GetInstance().SetTransitionDuration(280);
-    ui::UIManager::GetInstance().NavigateTo("home");
+    // 4) Transition settings
+    mgr.SetTransitionDuration(280);
+    /* Keep at most 3 inactive pages in memory; -1 = unlimited (default), 0 = destroy immediately */
+    mgr.SetMaxCachedPages(3);
+
+    mgr.NavigateTo("home");
     ESP_LOGI(TAG, "Example ready. Use buttons or swipe to navigate.");
 }

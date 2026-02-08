@@ -5,6 +5,8 @@
 #include <esp_log.h>
 #include <string>
 
+namespace ui {
+
 class Display {
 public:
     Display();
@@ -33,6 +35,8 @@ public:
         if (display_ && !display_->Lock(30000)) ESP_LOGE("Display", "Failed to lock display");
     }
     ~DisplayLockGuard() { if (display_) display_->Unlock(); }
+    DisplayLockGuard(const DisplayLockGuard &) = delete;
+    DisplayLockGuard &operator=(const DisplayLockGuard &) = delete;
 private:
     Display *display_;
 };
@@ -41,6 +45,8 @@ class NoDisplay : public Display {
     bool Lock(int timeout_ms = 0) override { (void)timeout_ms; return true; }
     void Unlock() override {}
 };
+
+} // namespace ui
 
 /** Optional: bind a pointer (touch) device to a display. Skip if using lvgl_port_add_touch. */
 lv_indev_t *lvgl_nav_kit_add_pointer_indev(lv_display_t *disp,

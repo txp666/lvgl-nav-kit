@@ -2,6 +2,7 @@
 #define LVGL_NAV_KIT_PAGE_BASE_H
 
 #include <functional>
+#include <string>
 #include <vector>
 #include "lvgl.h"
 #include "lvgl_nav_kit/ui_types.h"
@@ -22,7 +23,7 @@ public:
     virtual void OnEnter() {}
     virtual void OnLeave() {}
     virtual void OnDestroy() {}
-    const char *GetId() const { return id_; }
+    const char *GetId() const { return id_.c_str(); }
     lv_obj_t *GetContainer() const { return container_; }
     PageState GetState() const { return state_; }
     const ui_theme_t *GetTheme() const { return theme_; }
@@ -54,7 +55,7 @@ protected:
     bool IsLoading() const { return loading_overlay_ != nullptr; }
 protected:
     lv_obj_t *container_ = nullptr;
-    const char *id_;
+    std::string id_;
     PageState state_ = PageState::Registered;
     lv_obj_t *loading_overlay_ = nullptr;
 private:

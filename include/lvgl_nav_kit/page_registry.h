@@ -3,7 +3,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 #include "lvgl_nav_kit/page_base.h"
 #include "lvgl_nav_kit/ui_types.h"
 
@@ -33,9 +32,8 @@ public:
     void SetNavigation(const char *page_id, const PageNavigation &nav);
     bool GetNavigationTarget(const char *page_id, Direction gesture_dir, PageBase *&out_target, Direction &out_anim_dir, TransitionType &out_anim_type);
     void Clear();
-    size_t GetPageCount() const { return pages_.size(); }
+    size_t GetPageCount() const { return id_map_.size(); }
 private:
-    std::vector<PageBase *> pages_;
     std::map<std::string, PageBase *> id_map_;
     std::map<std::string, PageNavigation> navigation_map_;
 };
