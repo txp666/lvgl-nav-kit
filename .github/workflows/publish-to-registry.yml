@@ -1,0 +1,71 @@
+# 推送到 ESP Component Registry: https://components.espressif.com
+# 触发方式：推送 tag（如 v1.0.0）或发布 Release 后自动运行
+# 前置条件：在 GitHub 仓库 Settings → Secrets 中配置 IDF_COMPONENT_API_TOKEN
+
+name: Push component to Espressif Component Registry
+
+on:
+  push:
+    tags:
+      - 'v*'   # 例如推送 tag: git tag v1.0.0 && git push origin v1.0.0
+  release:
+    types: [published]
+
+jobs:
+  upload_component:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 创建 Release 需要
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify idf_component.yml
+        run: |
+          if [ ! -f "idf_component.yml" ]; then
+            echo "Error: idf_component.yml not found"
+            exit 1
+          fi
+          cat idf_component.yml
+
+      - name: Create GitHub Release (on tag push only)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          # 查询时不用 -f，否则 404 会直接退出；不存在时再创建
+          if curl -sS -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | grep -q '"id"'; then
+            echo "Release $TAG_NAME already exists"
+          else
+            curl -sSf -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" \
+              -d "{
+                \"tag_name\": \"$TAG_NAME\",
+                \"name\": \"$TAG_NAME\",
+                \"body\": \"$TAG_NAME\n\nSynced to ESP Component Registry.\n\nhttps://components.espressif.com/components/txp666/lvgl-nav-kit\",
+                \"draft\": false,
+                \"prerelease\": false
+              }"
+          fi
+
+      - name: Upload to ESP Component Registry
+        uses: espressif/upload-components-ci-action@v2
+        with:
+          components: "lvgl-nav-kit: ."
+          namespace: "txp666"
+          version: ${{ (github.event_name == 'push' && github.ref_name) || (github.event_name == 'release' && github.event.release.tag_name) || '' }}
+          api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Component Release" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag/Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry**: https://components.espressif.com/components/txp666/lvgl-nav-kit" >> $GITHUB_STEP_SUMMARY

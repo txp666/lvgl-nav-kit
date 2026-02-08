@@ -1,0 +1,10 @@
+## IDF Component Manager Manifest
+## Registry: https://components.espressif.com/
+dependencies:
+  lvgl/lvgl: ">=9.0"
+
+version: "1.0.0"
+description: "LVGL page navigation for ESP-IDF: lifecycle, gestures, transitions, theme"
+repository: "https://github.com/txp666/lvgl-nav-kit"
+license: "MIT"
+url: "https://github.com/txp666/lvgl-nav-kit"
