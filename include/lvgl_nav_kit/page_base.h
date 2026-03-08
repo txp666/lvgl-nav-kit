@@ -30,6 +30,11 @@ public:
 protected:
     lv_timer_t *CreateTimer(lv_timer_cb_t cb, uint32_t period, void *user_data = nullptr);
     void DeleteAllTimers();
+private:
+    void PauseAllTimers();
+    void ResumeAllTimers();
+    void DoEnter();
+    void DoLeave();
     void AddEventHandler(lv_obj_t *obj, lv_event_cb_t cb, lv_event_code_t code, void *user_data = nullptr);
     static bool IsLargeScreen() { return LV_HOR_RES >= 720; }
     static int ScreenWidth() { return LV_HOR_RES; }

@@ -44,7 +44,7 @@ void UIManager::Initialize(lv_obj_t *parent, const ui_theme_t *theme) {
 void UIManager::Shutdown() {
     if (!initialized_) return;
     if (current_page_) {
-        current_page_->OnLeave();
+        current_page_->DoLeave();
         current_page_->DoDestroy();
         current_page_ = nullptr;
     }
@@ -122,14 +122,14 @@ void UIManager::DoNavigate(PageBase *target, Direction dir, TransitionType type,
 
     if (type == TransitionType::None || !old_page) {
         if (old_page) {
-            old_page->OnLeave();
+            old_page->DoLeave();
             old_page->state_ = PageState::Inactive;
             lv_obj_add_flag(old_page->GetContainer(), LV_OBJ_FLAG_HIDDEN);
             inactive_cache_.push_back(old_page);
         }
         if (target->GetContainer()) lv_obj_clear_flag(target->GetContainer(), LV_OBJ_FLAG_HIDDEN);
         target->state_ = PageState::Active;
-        target->OnEnter();
+        target->DoEnter();
         current_page_ = target;
         CleanupInactivePages();
     } else if (type == TransitionType::Fade) {
@@ -146,7 +146,7 @@ void UIManager::DoNavigate(PageBase *target, Direction dir, TransitionType type,
 
 void UIManager::OnAnimationComplete(PageBase *old_page, PageBase *new_page) {
     if (old_page) {
-        old_page->OnLeave();
+        old_page->DoLeave();
         old_page->state_ = PageState::Inactive;
         if (old_page->GetContainer()) {
             lv_obj_add_flag(old_page->GetContainer(), LV_OBJ_FLAG_HIDDEN);
@@ -154,7 +154,7 @@ void UIManager::OnAnimationComplete(PageBase *old_page, PageBase *new_page) {
         inactive_cache_.push_back(old_page);
     }
     new_page->state_ = PageState::Active;
-    new_page->OnEnter();
+    new_page->DoEnter();
     is_animating_ = false;
     CleanupInactivePages();
 }

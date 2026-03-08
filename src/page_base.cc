@@ -63,6 +63,24 @@ void PageBase::DeleteAllTimers() {
     timers_.clear();
 }
 
+void PageBase::PauseAllTimers() {
+    for (auto *t : timers_) { if (t) lv_timer_pause(t); }
+}
+
+void PageBase::ResumeAllTimers() {
+    for (auto *t : timers_) { if (t) lv_timer_resume(t); }
+}
+
+void PageBase::DoEnter() {
+    ResumeAllTimers();
+    OnEnter();
+}
+
+void PageBase::DoLeave() {
+    OnLeave();
+    PauseAllTimers();
+}
+
 void PageBase::AddEventHandler(lv_obj_t *obj, lv_event_cb_t cb, lv_event_code_t code, void *user_data) {
     lv_obj_add_event_cb(obj, cb, code, user_data);
     event_bindings_.push_back({obj, cb});
