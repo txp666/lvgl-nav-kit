@@ -3,7 +3,7 @@
 dependencies:
   lvgl/lvgl: ">=9.0"
 
-version: "1.2.0"
+version: "1.2.1"
 description: "LVGL page navigation for ESP-IDF: lifecycle, gestures, transitions, theme"
 repository: "https://github.com/txp666/lvgl-nav-kit"
 license: "MIT"

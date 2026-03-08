@@ -30,16 +30,10 @@ public:
 protected:
     lv_timer_t *CreateTimer(lv_timer_cb_t cb, uint32_t period, void *user_data = nullptr);
     void DeleteAllTimers();
-private:
-    void PauseAllTimers();
-    void ResumeAllTimers();
-    void DoEnter();
-    void DoLeave();
     void AddEventHandler(lv_obj_t *obj, lv_event_cb_t cb, lv_event_code_t code, void *user_data = nullptr);
     static bool IsLargeScreen() { return LV_HOR_RES >= 720; }
     static int ScreenWidth() { return LV_HOR_RES; }
     static int ScreenHeight() { return LV_VER_RES; }
-    /** Content area top offset from theme status_bar_height (0 = no bar). */
     int GetStatusBarHeight() const;
     lv_obj_t *CreateLabel(lv_obj_t *parent, const char *text);
     lv_obj_t *CreateButton(lv_obj_t *parent, const char *text, lv_event_cb_t cb, void *user_data = nullptr);
@@ -58,12 +52,15 @@ private:
     void ShowLoading(const char *text = "Loading...");
     void HideLoading();
     bool IsLoading() const { return loading_overlay_ != nullptr; }
-protected:
     lv_obj_t *container_ = nullptr;
     std::string id_;
     PageState state_ = PageState::Registered;
     lv_obj_t *loading_overlay_ = nullptr;
 private:
+    void PauseAllTimers();
+    void ResumeAllTimers();
+    void DoEnter();
+    void DoLeave();
     void DoCreate(lv_obj_t *parent, const ui_theme_t *theme);
     void DoDestroy();
     const ui_theme_t *theme_ = nullptr;
