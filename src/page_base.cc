@@ -54,7 +54,12 @@ void PageBase::DoDestroy() {
 
 lv_timer_t *PageBase::CreateTimer(lv_timer_cb_t cb, uint32_t period, void *user_data) {
     lv_timer_t *t = lv_timer_create(cb, period, user_data);
-    if (t) timers_.push_back(t);
+    if (t) {
+        // PageBase tracks timer ownership in timers_, so LVGL must not auto-delete
+        // one-shot timers behind our back.
+        lv_timer_set_auto_delete(t, false);
+        timers_.push_back(t);
+    }
     return t;
 }
 
